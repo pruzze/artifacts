@@ -1,0 +1,227 @@
+<project name="pulsar-get-pulsar" default="get-current-pulsar" basedir="..">
+
+    <description>Get the current Pulsar</description>
+
+    <basename property="scriptDir" file="${ant.file}"/>
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${scriptDir}/lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+
+    <target name="get-current-pulsar" depends="get-pulsar, unpack" description="Hämtar aktuell version av Pulsar."/>
+
+    <target name="-get-current-properties">
+        <!-- "develop" = Developer version, "Version number" = Minified Production version -->
+        <property name="repositoryURL" value="https://raw.githubusercontent.com/DSE-AB/artifacts/master/pulsar"/>
+        <property name="version" value="develop"/>
+        <!--<property name="version" value="1.0.3"/>-->
+        <loadproperties prefix="dist">
+            <url url="${repositoryURL}/spa-ui-${version}.properties"/>
+        </loadproperties>
+
+        <property name="launcher.path" value="${dist.launcher}"/>
+        <property name="modules.path" value="${dist.modules}"/>
+        <property name="apps.path" value="${dist.apps}"/>
+        <property name="endorsed.path" value="${dist.endorsed}"/>
+        <property name="javadoc.path" value="${dist.javadoc}"/>
+        <property name="docs.path" value="${dist.docs}"/>
+
+        <property name="spaui.path" value="${dist.spaui}"/>
+        <property name="spaui-endorsed.path" value="${dist.spaui-endorsed}"/>
+
+        <basename property="launcher.file" file="${launcher.path}"/>
+        <basename property="modules.file" file="${modules.path}"/>
+        <basename property="apps.file" file="${apps.path}"/>
+        <basename property="endorsed.file" file="${endorsed.path}"/>
+        <basename property="javadoc.file" file="${javadoc.path}"/>
+        <basename property="docs.file" file="${docs.path}"/>
+
+        <basename property="spaui.file" file="${spaui.path}"/>
+        <basename property="spaui-endorsed.file" file="${spaui-endorsed.path}"/>
+
+    </target>
+
+    <target name="get-pulsar" depends="-get-current-properties">
+
+
+        <if>
+            <available file="${launcher.file}"/>
+            <else>
+                <delete>
+                    <fileset dir="." includes="pulsar.launcher-*.jar"/>
+                </delete>
+                <get src="${repositoryURL}/${launcher.path}" dest="."/>
+            </else>
+        </if>
+
+        <if>
+            <available file="${modules.file}"/>
+            <else>
+                <delete>
+                    <fileset dir="." includes="pulsar-modules-*.pulsar"/>
+                </delete>
+                <get src="${repositoryURL}/${modules.path}" dest="."/>
+            </else>
+        </if>
+
+        <if>
+            <available file="${apps.file}"/>
+            <else>
+                <delete>
+                    <fileset dir="." includes="pulsar-apps-*.pulsar"/>
+                </delete>
+                <get src="${repositoryURL}/${apps.path}" dest="."/>
+            </else>
+        </if>
+
+        <if>
+            <available file="${endorsed.file}"/>
+            <else>
+                <delete>
+                    <fileset dir="." includes="pulsar-endorsed-*.pulsar"/>
+                </delete>
+                <get src="${repositoryURL}/${endorsed.path}" dest="."/>
+            </else>
+        </if>
+
+        <if>
+            <available file="${spaui.file}"/>
+            <else>
+                <delete>
+                    <fileset dir="." includes="spa-ui-*.pulsar"/>
+                </delete>
+                <get src="${repositoryURL}/${spaui.path}" dest="."/>
+            </else>
+        </if>
+
+        <if>
+            <available file="${spaui-endorsed.file}"/>
+            <else>
+                <delete>
+                    <fileset dir="." includes="spa-ui-endorsed*.pulsar"/>
+                </delete>
+                <get src="${repositoryURL}/${spaui-endorsed.path}" dest="."/>
+            </else>
+        </if>
+
+        <if>
+            <available file="${docs.file}"/>
+            <else>
+                <mkdir dir="docs"/>
+                <delete>
+                    <fileset dir="docs" includes="Pulsar * Documentation - *.pdf"/>
+                </delete>
+                <propertyregex property="docs_url" input="${docs.path}" regexp=" " replace="%20" global="true"/>
+                <get src="${repositoryURL}/${docs_url}" dest="docs/${docs.file}"/>
+            </else>
+        </if>
+
+    </target>
+
+    <target name="unpack">
+
+        <delete dir="lib/compile"/>
+        <delete dir="lib/dist"/>
+
+        <!-- Unpack Pulsar module resources, needed for compile, dist and config-->
+        <unzip src="${modules.file}" dest="lib/compile">
+            <patternset>
+                <include name="*.jar"/>
+                <exclude name="derby-*.jar"/>
+                <exclude name="ojdbc-*.jar"/>
+            </patternset>
+        </unzip>
+        <unzip src="${modules.file}" dest="lib/dist">
+            <patternset>
+                <include name="**/pulsar.core-*.jar"/>
+                <include name="**/pulsar.packager-*.jar"/>
+            </patternset>
+            <flattenmapper/>
+        </unzip>
+
+        <!-- Unpack resources from Pulsar launcher, needed for compile, dist and config-->
+        <unzip src="${launcher.file}" dest="lib/compile">
+            <patternset>
+                <include name="**/slf4j-api-*.jar"/>
+                <include name="**/javax.inject-*.jar"/>
+            </patternset>
+            <flattenmapper/>
+        </unzip>
+        <unzip src="${launcher.file}" dest="lib/dist">
+            <patternset>
+                <include name="**/log4j-*.jar"/>
+                <include name="**/logback-*.jar"/>
+            </patternset>
+            <flattenmapper/>
+        </unzip>
+        <unzip src="${launcher.file}" dest="conf" overwrite="false">
+            <patternset>
+                <include name="**/logback.xml"/>
+            </patternset>
+            <flattenmapper/>
+        </unzip>
+        <!-- Include the Pulsar Launcher itself as a compile resource -->
+        <copy file="${launcher.file}" todir="lib/compile"/>
+
+        <!-- Unpack endorsed resources needed for compilation -->
+        <unzip src="${endorsed.file}" dest="lib/compile">
+            <patternset>
+                <include name="**/servlet-api-*.jar"/>
+                <include name="**/geronimo-javamail_1.4_spec-*.jar"/>
+                <include name="**/org.apache.servicemix.specs.jsr339-api*.jar"/>
+                <include name="**/cxf-rt-frontend-jaxrs-*.jar"/>
+                <include name="**/cxf-rt-frontend-simple-*.jar"/>
+                <include name="**/cxf-rt-transports-http-*.jar"/>
+                <include name="**/cxf-api-*.jar"/>
+                <include name="**/pax-web-runtime-3.*.jar"/>
+            </patternset>
+            <flattenmapper/>
+        </unzip>
+
+
+        <!-- Unpack spu-ui resources needed for compilation -->
+        <unzip src="${spaui.file}" dest="lib/compile">
+            <patternset>
+                <include name="**/pulsar.spaui.*.jar"/>
+            </patternset>
+            <flattenmapper/>
+        </unzip>
+
+        <unzip dest="lib/compile">
+            <fileset dir="lib/compile">
+                <include name="*.jar"/>
+                <!-- exclude launcher!? -->
+            </fileset>
+            <patternset>
+                <include name="PULSAR-INF/lib-exported/*.jar"/>
+            </patternset>
+            <flattenmapper/>
+        </unzip>
+
+        <!-- Unpack javadoc -->
+        <delete dir="lib/docs"/>
+        <mkdir dir="lib/docs"/>
+        <unzip dest="lib/docs">
+            <fileset dir="lib/compile" includes="*.jar"/>
+            <patternset>
+                <include name="PULSAR-INF/docs/api/**"/>
+            </patternset>
+            <mapper>
+                <globmapper from="PULSAR-INF/docs/api/*" to="*"/>
+            </mapper>
+        </unzip>
+        <get src="${repositoryURL}/${javadoc.path}" dest="lib/docs/${javadoc.file}"/>
+        <unzip src="lib/docs/${javadoc.file}"
+               dest="lib/docs"/>
+        <delete file="lib/docs/${javadoc.file}"/>
+
+        <antcall target="relink-pulsar"/>
+    </target>
+
+    <target name="relink-pulsar" depends="-get-current-properties">
+        <java jar="${launcher.file}" args="--relink" fork="true"/>
+    </target>
+
+</project>
