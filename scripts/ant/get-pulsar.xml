@@ -1,22 +1,20 @@
-<project name="pulsar-distribution" default="install-upgrade" basedir="..">
+<project name="pulsar-distribution" default="install-upgrade" basedir=".">
 
     <description>Install or upgrade Pulsar for development.</description>
 
-    <basename property="scriptDir" file="${ant.file}"/>
+    <dirname property="script.dir" file="${ant.file}"/>
 
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
         <classpath>
-            <pathelement location="${scriptDir}/lib/ant-contrib-1.0b3.jar"/>
+            <pathelement location="${script.dir}/lib/ant-contrib-1.0b3.jar"/>
         </classpath>
     </taskdef>
 
     <target name="install-upgrade" depends="-download-from-repo, -unpack-devlib" description="Install or update Pulsar for development."/>
 
-    <target name="-get-current-properties">
+    <target name="-load-properties">
         <!-- Load configuration for the get-pulsar -->
-        <loadproperties prefix="conf">
-            <url url="${scriptDir}/get-pulsar.properties"/>
-        </loadproperties>
+        <loadproperties prefix="conf" srcfile="${script.dir}/get-pulsar.properties"/>
 
         <fail unless="conf.base.dir" message="Missing configuration for 'base.dir' in property file."/>
         <fail unless="conf.repositoryURL" message="Missing configuration for 'repositoryURL' in property file."/>
@@ -44,8 +42,8 @@
         <property name="spaui-endorsed.path" value="${dist.spaui-endorsed}"/>
 
         <property name="devproject.dir" location="${conf.base.dir}"/>
-        <property name="dest.dir" location="${conf.pulsar.dir}"/>
-        <property name="lib-devel.dir" location="${conf.devlib.dir}"/>
+        <property name="dest.dir" location="${devproject.dir}/${conf.pulsar.dir}"/>
+        <property name="lib-devel.dir" location="${devproject.dir}/${conf.devlib.dir}"/>
 
         <basename property="launcher.file" file="${launcher.path}"/>
         <basename property="modules.file" file="${modules.path}"/>
@@ -59,7 +57,7 @@
 
     </target>
 
-    <target name="-download-from-repo" depends="-get-current-properties">
+    <target name="-download-from-repo" depends="-load-properties">
 
         <mkdir dir="${dest.dir}"/>
 
@@ -137,7 +135,7 @@
 
     </target>
 
-    <target name="-unpack-devlib" depends="-get-current-properties">
+    <target name="-unpack-devlib" depends="-load-properties">
 
         <delete dir="${lib-devel.dir}/compile"/>
         <delete dir="${lib-devel.dir}/dist"/>
@@ -245,7 +243,7 @@
         <echo file="${dest.dir}/local-dev-link.pulsarlink" message="${dist.repo.file}"/>
     </target>
 
-    <target name="-relink-launcher" depends="-get-current-properties">
+    <target name="-relink-launcher" depends="-load-properties">
         <java jar="${launcher.file}" args="--relink" fork="true"/>
     </target>
 
