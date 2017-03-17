@@ -74,13 +74,11 @@
         <property name="modules.path" value="${dist.modules}"/>
         <property name="apps.path" value="${dist.apps}"/>
         <property name="endorsed.path" value="${dist.endorsed}"/>
-        <property name="javadoc.path" value="${dist.javadoc}"/>
         <property name="docs.path" value="${dist.docs}"/>
 
         <basename property="modules.file" file="${modules.path}"/>
         <basename property="apps.file" file="${apps.path}"/>
         <basename property="endorsed.file" file="${endorsed.path}"/>
-        <basename property="javadoc.file" file="${javadoc.path}"/>
         <basename property="docs.file" file="${docs.path}"/>
 
         <mkdir dir="${pulsar.dir}"/>
@@ -149,12 +147,19 @@
     </target>
 
     <target name="-post-update-package-pulsar" depends="-update-package-pulsar">
-        <!-- Download javadoc main index files for Pulsar Core -->
-        <mkdir dir="${lib-dev.dir}/docs"/>
-        <get src="${repositoryURL}/${javadoc.path}" dest="${lib-dev.dir}/docs/${javadoc.file}"/>
-        <unzip src="${lib-dev.dir}/docs/${javadoc.file}"
-               dest="${lib-dev.dir}/docs"/>
-        <delete file="${lib-dev.dir}/docs/${javadoc.file}"/>
+        <if>
+            <isset property="dist.javadoc"/>
+            <then>
+                <property name="javadoc.path" value="${dist.javadoc}"/>
+                <basename property="javadoc.file" file="${javadoc.path}"/>
+                <!-- Download javadoc main index files for Pulsar Core -->
+                <mkdir dir="${lib-dev.dir}/docs"/>
+                <get src="${repositoryURL}/${javadoc.path}" dest="${lib-dev.dir}/docs/${javadoc.file}"/>
+                <unzip src="${lib-dev.dir}/docs/${javadoc.file}"
+                       dest="${lib-dev.dir}/docs"/>
+                <delete file="${lib-dev.dir}/docs/${javadoc.file}"/>
+            </then>
+        </if>
     </target>
 
     <!-- PACKAGE: SPA-UI -->
