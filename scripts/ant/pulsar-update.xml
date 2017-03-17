@@ -1,4 +1,4 @@
-<project name="pulsar-distribution" default="update" basedir=".">
+<project name="pulsar-update" default="update" basedir=".">
 
     <description>Install or upgrade Pulsar for development.</description>
 
@@ -44,7 +44,7 @@
 
     <target name="-load-properties">
         <!-- Load configuration for the get-pulsar -->
-        <loadproperties prefix="conf" srcfile="${script.dir}/get-pulsar.properties"/>
+        <loadproperties prefix="conf" srcfile="${script.dir}/pulsar-update.properties"/>
 
         <fail unless="conf.base.dir" message="Missing configuration for 'base.dir' in property file."/>
         <fail unless="conf.repositoryURL" message="Missing configuration for 'repositoryURL' in property file."/>
@@ -83,9 +83,9 @@
 
         <mkdir dir="${pulsar.dir}"/>
         <update-from-repo file="${launcher.file}" path="${launcher.path}" delete="pulsar.launcher-*.jar"/>
-        <update-from-repo file="${modules.file}" path="${modules.path}" delete="pulsar-modules-*.jar"/>
-        <update-from-repo file="${apps.file}" path="${apps.path}" delete="pulsar-apps-*.jar"/>
-        <update-from-repo file="${endorsed.file}" path="${endorsed.path}" delete="pulsar-endorsed-*.jar"/>
+        <update-from-repo file="${modules.file}" path="${modules.path}" delete="pulsar-modules-*.pulsar"/>
+        <update-from-repo file="${apps.file}" path="${apps.path}" delete="pulsar-apps-*.pulsar"/>
+        <update-from-repo file="${endorsed.file}" path="${endorsed.path}" delete="pulsar-endorsed-*.pulsar"/>
 
         <mkdir dir="${pulsar.dir}/docs"/>
         <propertyregex property="docs_url" input="${docs.path}" regexp=" " replace="%20" global="true"/>
@@ -171,8 +171,8 @@
         <basename property="spaui.file" file="${spaui.path}"/>
         <basename property="spaui-endorsed.file" file="${spaui-endorsed.path}"/>
 
-        <update-from-repo file="${spaui.file}" path="${spaui.path}" delete="spa-ui-*.jar"/>
-        <update-from-repo file="${spaui-endorsed.file}" path="${spaui-endorsed.path}" delete="spa-ui-endorsed-*.jar"/>
+        <update-from-repo file="${spaui.file}" path="${spaui.path}" delete="spa-ui-*.pulsar"/>
+        <update-from-repo file="${spaui-endorsed.file}" path="${spaui-endorsed.path}" delete="spa-ui-endorsed-*.pulsar"/>
 
         <!-- Unpack Pulsar SPA-UI developer compile library resource -->
         <unzip src="${pulsar.dir}/${spaui.file}" dest="${lib-dev.dir}/compile">
