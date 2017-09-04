@@ -36,7 +36,17 @@
                     <delete verbose="true">
                         <fileset dir="${pulsar.dir}" includes="@{delete}"/>
                     </delete>
-                    <get src="${repositoryURL}/@{path}" dest="${pulsar.dir}/@{file}"/>
+                    <if>
+                        <!-- Check if `path` is a URL, then fetch it without prepending the repo url. -->
+                        <matches string="@{path}" pattern="^[a-z]+://.*" casesensitive="false"/>
+                        <then>
+                            <get src="@{path}" dest="${pulsar.dir}/@{file}"/>
+                        </then>
+                        <else>
+                            <!-- Otherwise, it is a relative path in the repository -->
+                            <get src="${repositoryURL}/@{path}" dest="${pulsar.dir}/@{file}"/>
+                        </else>
+                    </if>
                 </else>
             </if>
         </sequential>
@@ -89,7 +99,12 @@
 
         <mkdir dir="${pulsar.dir}/docs"/>
         <propertyregex property="docs_url" input="${docs.path}" regexp=" " replace="%20" global="true"/>
-        <update-from-repo file="docs/${docs.file}" path="${docs_url}" delete="docs/Pulsar*Documentation.pdf"/>
+        <if>
+            <isset property="docs_url"/>
+            <then>
+                <update-from-repo file="docs/${docs.file}" path="${docs_url}" delete="docs/Pulsar*Documentation.pdf"/>
+            </then>
+        </if>
 
         <!-- Unpack Pulsar Core developer compile library resource -->
         <copy file="${pulsar.dir}/${launcher.file}" todir="${lib-dev.dir}/compile"/>
@@ -117,6 +132,7 @@
                 <include name="**/cxf-rt-transports-http-*.jar"/>
                 <include name="**/cxf-api-*.jar"/>
                 <include name="**/pax-web-runtime-3.*.jar"/>
+                <include name="**/org.apache.servicemix.bundles.wsdl4j*.jar"/>
             </patternset>
             <flattenmapper/>
         </unzip>
@@ -178,6 +194,12 @@
         <unzip src="${pulsar.dir}/${spaui.file}" dest="${lib-dev.dir}/compile">
             <patternset>
                 <include name="**/pulsar.spaui.*.jar"/>
+            </patternset>
+            <flattenmapper/>
+        </unzip>
+        <unzip src="${pulsar.dir}/${spaui-endorsed.file}" dest="${lib-dev.dir}/compile">
+            <patternset>
+                <include name="**/gson*.jar"/>
             </patternset>
             <flattenmapper/>
         </unzip>
