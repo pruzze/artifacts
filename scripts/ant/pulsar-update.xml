@@ -84,25 +84,33 @@
         <property name="modules.path" value="${dist.modules}"/>
         <property name="apps.path" value="${dist.apps}"/>
         <property name="endorsed.path" value="${dist.endorsed}"/>
-        <property name="docs.path" value="${dist.docs}"/>
 
         <basename property="modules.file" file="${modules.path}"/>
         <basename property="apps.file" file="${apps.path}"/>
         <basename property="endorsed.file" file="${endorsed.path}"/>
-        <basename property="docs.file" file="${docs.path}"/>
 
         <mkdir dir="${pulsar.dir}"/>
+
+        <!-- Download mandatory files from repository -->
         <update-from-repo file="${launcher.file}" path="${launcher.path}" delete="pulsar.launcher-*.jar"/>
         <update-from-repo file="${modules.file}" path="${modules.path}" delete="pulsar-modules-*.pulsar"/>
         <update-from-repo file="${apps.file}" path="${apps.path}" delete="pulsar-apps-*.pulsar"/>
         <update-from-repo file="${endorsed.file}" path="${endorsed.path}" delete="pulsar-endorsed-*.pulsar"/>
 
-        <mkdir dir="${pulsar.dir}/docs"/>
-        <propertyregex property="docs_url" input="${docs.path}" regexp=" " replace="%20" global="true"/>
+        <!-- If documentation is provided in requested release download it from repository -->
         <if>
-            <isset property="docs_url"/>
+            <isset property="dist.docs"/>
             <then>
-                <update-from-repo file="docs/${docs.file}" path="${docs_url}" delete="docs/Pulsar*Documentation.pdf"/>
+                <property name="docs.path" value="${dist.docs}"/>
+                <basename property="docs.file" file="${docs.path}"/>
+                <mkdir dir="${pulsar.dir}/docs"/>
+                <propertyregex property="docs_url" input="${docs.path}" regexp=" " replace="%20" global="true"/>
+                <if>
+                    <isset property="docs_url"/>
+                    <then>
+                        <update-from-repo file="docs/${docs.file}" path="${docs_url}" delete="docs/Pulsar*Documentation.pdf"/>
+                    </then>
+                </if>
             </then>
         </if>
 
@@ -214,7 +222,6 @@
         <delete dir="${lib-dev.dir}/dist"/>
         <delete dir="${lib-dev.dir}/docs"/>
     </target>
-
 
     <target name="-unpack-devlib-resources" depends="-load-properties">
         <!-- Unpack exported jars from inside the compile modules -->
