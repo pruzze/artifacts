@@ -44,9 +44,9 @@
                         </then>
                         <else>
                             <!-- Otherwise, it is a relative path in the repository -->
-                    <get src="${repositoryURL}/@{path}" dest="${pulsar.dir}/@{file}"/>
-                </else>
-            </if>
+                            <get src="${repositoryURL}/@{path}" dest="${pulsar.dir}/@{file}"/>
+                        </else>
+                    </if>
                 </else>
             </if>
         </sequential>
@@ -106,9 +106,11 @@
                 <mkdir dir="${pulsar.dir}/docs"/>
                 <propertyregex property="docs_url" input="${docs.path}" regexp=" " replace="%20" global="true"/>
                 <if>
-            <isset property="docs_url"/>
-            <then>
-                <update-from-repo file="docs/${docs.file}" path="${docs_url}" delete="docs/Pulsar*Documentation.pdf"/>
+                    <isset property="docs_url"/>
+                    <then>
+                        <update-from-repo file="docs/${docs.file}" path="${docs_url}" delete="docs/Pulsar*Documentation.pdf"/>
+                    </then>
+                </if>
             </then>
         </if>
 
