@@ -105,6 +105,9 @@
                 <basename property="docs.file" file="${docs.path}"/>
                 <mkdir dir="${pulsar.dir}/docs"/>
                 <propertyregex property="docs_url" input="${docs.path}" regexp=" " replace="%20" global="true"/>
+                <if>
+            <isset property="docs_url"/>
+            <then>
                 <update-from-repo file="docs/${docs.file}" path="${docs_url}" delete="docs/Pulsar*Documentation.pdf"/>
             </then>
         </if>
